@@ -274,7 +274,7 @@ class NewRelicTransactionHandler
             ->trim("'/ ");
 
         return $formattedCommand->contains(' ')
-            ? $formattedCommand->before(' ')->toString()
-            : $formattedCommand->toString();
+            ? (string) $formattedCommand->before(' ')
+            : (string) $formattedCommand;
     }
 }

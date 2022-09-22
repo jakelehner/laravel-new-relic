@@ -16,7 +16,7 @@ class NewRelicMiddleware
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, \Closure $next)
     {
         // Ensure New Relic is enabled before continuing.
         if (! app(NewRelicTransactionHandler::class)::newRelicEnabled()) {
@@ -58,7 +58,7 @@ class NewRelicMiddleware
                 $this->user ? 'User' : config('new-relic.http.visitors.guest_label')
             )->addParameter(
                 'user_id',
-                $this->user?->getAuthIdentifier(),
+                optional($this->user)->getAuthIdentifier(),
             );
 
         // If the request name resolves differently, update it.
@@ -75,12 +75,12 @@ class NewRelicMiddleware
     protected function requestName(Request $request): string
     {
         return config('new-relic.http.prefix') . (
-            $this->getCustomTransactionName($request)
+                $this->getCustomTransactionName($request)
                 ?? $this->getLivewireTransactionName($request)
-                ?? $request->route()?->getName()
-                ?? $request->route()?->getActionName()
+                ?? optional($request->route())->getName()
+                ?? optional($request->route())->getActionName()
                 ?? $request->path()
-        );
+            );
     }
 
     /**
@@ -110,9 +110,9 @@ class NewRelicMiddleware
     {
         return collect($this->mapCustomTransactionNames())
             ->mapWithKeys(fn (string $name, string $path) => [
-                (Str::of($path)->trim('/')->toString() ?: '/') => $name,
+                (trim($path, '/') ?: '/') => $name,
             ])->get(
-                Str::of($request->path())->trim('/')->toString() ?: '/'
+                trim($request->path(), '/') ?: '/'
             );
     }
 
